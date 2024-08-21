@@ -14,8 +14,8 @@ pipeline {
     }
 
     environment {
-        APP_NAME = "XYZ_APP"
-        APP_ENV  = "XYZ"
+        APP_NAME = "Jenkins_file"
+        APP_ENV  = "dev"
     }
 
     stages {
