@@ -1,4 +1,3 @@
-
 pipeline {
 
     agent {
@@ -17,7 +16,6 @@ pipeline {
     environment {
         APP_NAME = "XYZ_APP"
         APP_ENV  = "XYZ"
-	ENVIRONMENT = 'dev'
     }
 
     stages {
