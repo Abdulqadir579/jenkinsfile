@@ -53,7 +53,7 @@ pipeline {
 
                 stage('Execute Shell') {
                     steps {
-                        sh 'echo "Hello"'
+                        sh 'echo "Hello this is SWAPSPACE testing"'
                     }
                 }
 
@@ -61,7 +61,8 @@ pipeline {
                     steps {
                         sh "echo ${APP_ENV}"
                     }
-                }
+ 
+              }
 
             
             }
