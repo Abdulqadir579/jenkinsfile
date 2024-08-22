@@ -1,11 +1,9 @@
 pipeline {
     agent none // No global agent; dynamically assign agents per stage
 
- environment {
-        AGENT_LABEL = (env.BRANCH_NAME == 'develop') ? env.DEV_AGENT :
-                      (env.BRANCH_NAME == 'QA') ? env.QA_AGENT : 'default'
+    environment {
+        AGENT_LABEL = ''
     }
-
 
     options {
         buildDiscarder logRotator(
@@ -15,16 +13,25 @@ pipeline {
     }
 
     stages {
+        stage('Determine Agent') {
+            steps {
+                script {
+                    env.AGENT_LABEL = (env.BRANCH_NAME == 'develop') ? 'dev' :
+                                      (env.BRANCH_NAME == 'QA') ? 'qa' : 'default'
+                }
+            }
+        }
+
         stage('Checkout Code') {
             when {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                        expression { return env.AGENT_LABEL == 'dev' }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
+                        expression { return env.AGENT_LABEL == 'qa' }
                     }
                 }
             }
@@ -43,11 +50,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                        expression { return env.AGENT_LABEL == 'dev' }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
+                        expression { return env.AGENT_LABEL == 'qa' }
                     }
                 }
             }
@@ -67,11 +74,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                        expression { return env.AGENT_LABEL == 'dev' }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
+                        expression { return env.AGENT_LABEL == 'qa' }
                     }
                 }
             }
@@ -90,10 +97,10 @@ pipeline {
             when {
                 allOf {
                     branch 'develop'
-                    expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                    expression { return env.AGENT_LABEL == 'dev' }
                 }
             }
-            agent { label env.DEV_AGENT }
+            agent { label env.AGENT_LABEL }
             steps {
                 sh """
                 echo "SonarQube analysis is in process....."
@@ -108,10 +115,10 @@ pipeline {
             when {
                 allOf {
                     branch 'develop'
-                    expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                    expression { return env.AGENT_LABEL == 'dev' }
                 }
             }
-            agent { label env.DEV_AGENT }
+            agent { label env.AGENT_LABEL }
             steps {
                 sh """
                 echo "Trivy file scan is in process....."
@@ -127,11 +134,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
+                        expression { return env.AGENT_LABEL == 'dev' }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
+                        expression { return env.AGENT_LABEL == 'qa' }
                     }
                 }
             }
@@ -147,6 +154,5 @@ pipeline {
         }
 
     }
-
 }
 
