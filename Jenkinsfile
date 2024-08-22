@@ -1,5 +1,11 @@
 pipeline {
     agent none // No global agent; dynamically assign agents per stage
+
+    environment {
+        DEV_AGENT = 'dev'
+        QA_AGENT = 'qa'
+    }
+
     options {
         buildDiscarder logRotator(
             daysToKeepStr: '16',
@@ -8,17 +14,16 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout Code') {
             when {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.AGENT_LABEL == 'dev' }
+                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.AGENT_LABEL == 'qa' }
+                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
                     }
                 }
             }
@@ -37,11 +42,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.AGENT_LABEL == 'dev' }
+                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.AGENT_LABEL == 'qa' }
+                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
                     }
                 }
             }
@@ -50,10 +55,9 @@ pipeline {
                 sh """
                 echo "Building the package in process....."
                 """
-		sh """
-		echo "Building the package is completed....."
-		"""
-
+                sh """
+                echo "Building the package is completed....."
+                """
             }
         }
 
@@ -62,11 +66,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.AGENT_LABEL == 'dev' }
+                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.AGENT_LABEL == 'qa' }
+                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
                     }
                 }
             }
@@ -75,10 +79,9 @@ pipeline {
                 sh """
                 echo "Running unit test....."
                 """
-		sh """
+                sh """
                 echo "Running unit test completed....."
                 """
-
             }
         }
 
@@ -86,19 +89,17 @@ pipeline {
             when {
                 allOf {
                     branch 'develop'
-                    expression { return env.AGENT_LABEL == 'dev' }
+                    expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                 }
             }
-            agent { label env.AGENT_LABEL }
+            agent { label env.DEV_AGENT }
             steps {
                 sh """
                 echo "SonarQube analysis is in process....."
                 """
-		sh """
+                sh """
                 echo "SonarQube analysis has been completed....."
                 """
-
-
             }
         }
 
@@ -106,19 +107,17 @@ pipeline {
             when {
                 allOf {
                     branch 'develop'
-                    expression { return env.AGENT_LABEL == 'dev' }
+                    expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                 }
             }
-            agent { label env.AGENT_LABEL }
+            agent { label env.DEV_AGENT }
             steps {
                 sh """
                 echo "Trivy file scan is in process....."
                 """
-		sh """
+                sh """
                 echo "Trivy file scan has been completed....."
                 """
-
-
             }
         }
 
@@ -127,11 +126,11 @@ pipeline {
                 anyOf {
                     allOf {
                         branch 'develop'
-                        expression { return env.AGENT_LABEL == 'dev' }
+                        expression { return env.BRANCH_NAME == 'develop' && env.AGENT_LABEL == env.DEV_AGENT }
                     }
                     allOf {
                         branch 'QA'
-                        expression { return env.AGENT_LABEL == 'qa' }
+                        expression { return env.BRANCH_NAME == 'QA' && env.AGENT_LABEL == env.QA_AGENT }
                     }
                 }
             }
@@ -141,17 +140,16 @@ pipeline {
                 echo "Deploying to ${env.AGENT_LABEL.capitalize()} Server"
                 """
                 sh """
-                echo "Deploying in DEV environment successful! CONGRATULATIONS!!!....."
+                echo "Deploying in ${env.AGENT_LABEL.capitalize()} environment successful! CONGRATULATIONS!!!....."
                 """
-
             }
         }
 
     }
 
     environment {
-        AGENT_LABEL = env.BRANCH_NAME == 'develop' ? 'dev' :
-                      env.BRANCH_NAME == 'QA' ? 'qa' : 'default'
+        AGENT_LABEL = (env.BRANCH_NAME == 'develop') ? env.DEV_AGENT :
+                      (env.BRANCH_NAME == 'QA') ? env.QA_AGENT : 'default'
     }
 }
 
