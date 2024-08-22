@@ -1,10 +1,11 @@
 pipeline {
     agent none // No global agent; dynamically assign agents per stage
 
-    environment {
-        DEV_AGENT = 'dev'
-        QA_AGENT = 'qa'
+ environment {
+        AGENT_LABEL = (env.BRANCH_NAME == 'develop') ? env.DEV_AGENT :
+                      (env.BRANCH_NAME == 'QA') ? env.QA_AGENT : 'default'
     }
+
 
     options {
         buildDiscarder logRotator(
@@ -147,9 +148,5 @@ pipeline {
 
     }
 
-    environment {
-        AGENT_LABEL = (env.BRANCH_NAME == 'develop') ? env.DEV_AGENT :
-                      (env.BRANCH_NAME == 'QA') ? env.QA_AGENT : 'default'
-    }
 }
 
